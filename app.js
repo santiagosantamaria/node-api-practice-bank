@@ -139,23 +139,27 @@ const createNewAccount = async (clientId) => {
 // Transactions
 
 // get transactions from an account
+const { Op } = require("sequelize");
 
 app.get("/transactions/:clientId", async function (req, res) {
     let clientId = req.params.clientId;
 
     try {
-        if (!clientId) {
+        if (!clientId || clientId === "" || clientId < 0) {
             res.status(200).json("Missing parameters");
         }
 
         let account = await Account.findOne({ where: { clientId: clientId } });
 
         if (account) {
-            // get last 10 records
+            // get reccords sent by Client and Received by Client
 
             let transactions = await Transaction.findAll({
                 where: {
-                    fromAccount: account.number,
+                    [Op.or]: [
+                        { fromAccount: account.number },
+                        { toAccount: account.number },
+                    ],
                 },
                 limit: 10,
                 order: [["createdAt", "DESC"]],
