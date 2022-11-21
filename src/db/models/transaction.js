@@ -14,9 +14,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Transaction.init({
-    fromAccount: DataTypes.INTEGER,
-    toAccount: DataTypes.INTEGER,
-    amount: DataTypes.FLOAT
+    fromAccount: DataTypes.STRING,
+    toAccount: DataTypes.STRING,
+    amount: DataTypes.FLOAT,
+    description: DataTypes.STRING(100),
   }, {
     sequelize,
     modelName: 'Transaction',

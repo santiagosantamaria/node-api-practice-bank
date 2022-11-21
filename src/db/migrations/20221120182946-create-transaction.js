@@ -10,13 +10,20 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       fromAccount: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       toAccount: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING,
+        allowNull: false, 
+      },
+      description: {
+        type: Sequelize.STRING,
+        allowNull: false, 
       },
       amount: {
-        type: Sequelize.FLOAT
+        type: Sequelize.FLOAT,
+        allowNull: false,
       },
       createdAt: {
         allowNull: false,

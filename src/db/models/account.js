@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Account.init({
     number: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
       unique: true
     },
