@@ -2,7 +2,8 @@ const axios = require("axios");
 const { use } = require("chai");
 const chai = require("chai");
 const { DESCRIBE } = require("sequelize");
-const { Client } = require("../src/db/models/");
+const { Client, Account } = require("../src/db/models/");
+const account = require("../src/db/models/account");
 const { assert } = chai;
 
 describe("Basic url test", function () {
@@ -114,5 +115,91 @@ describe("Client endpoints", function () {
                     done(err);
                 });
         });
+    });
+});
+
+describe("Transaction endpoints", function () {
+    // get all transactions from a client
+    it("Should get all transactions from a client", function (done) {
+        axios({
+            method: "get",
+            url: "http://localhost:5555/transactions/1",
+        })
+            .then((res) => {
+                // assert.equal(res.data[0].length <= 10, true);
+                assert.equal(res.status, 200);
+                done();
+            })
+            .catch((err) => {
+                done(err);
+            });
+    });
+});
+
+describe("Account endpoints", function () {
+    it("Should return exception exceeded limit", function (done) {
+        axios({
+            method: "post",
+            url: "http://localhost:5555/accounts/withdraw",
+            data: {
+                amount: 5000,
+                accountId: 1,
+            },
+        })
+            .then((res) => {
+                assert.equal(res.status, 200);
+                done();
+            })
+            .catch((err) => {
+                done(err);
+            });
+    });
+
+    it("Should make a Sucessfull withdrawal", function (done) {
+        let account = Account.findOne({
+            where: { id: 1 },
+        }).then((account) => {
+            account.balance = 10000;
+            account.save();
+        });
+
+        axios({
+            method: "post",
+            url: "http://localhost:5555/accounts/withdraw",
+            data: {
+                amount: 500,
+                accountId: 1,
+            },
+        })
+            .then((res) => {
+                let myAccount = Account.findOne({
+                    where: { id: 1 },
+                }).then((myAccount) => {
+                    assert.equal(myAccount.balance, 9500);
+                    done();
+                });
+            })
+            .catch((err) => {
+                done(err);
+            });
+    });
+
+    it("Should make a transaction", function (done) {
+        axios({
+            method: "post",
+            url: "http://localhost:5555/accounts/transfer",
+            data: {
+                amount: 500,
+                fromAccountId: "1110121369872637",
+                toAccountId: "7305307556322159",
+            },
+        })
+            .then((res) => {
+                assert.equal(res.status, 201);
+                done();
+            })
+            .catch((err) => {
+                done(err);
+            });
     });
 });

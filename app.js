@@ -174,6 +174,75 @@ app.get("/transactions/:clientId", async function (req, res) {
     }
 });
 
+// create an extraction from an account
+app.post("/accounts/withdraw", async function (req, res) {
+    let { accountId, amount } = req.body;
+
+    try {
+        if (!accountId || !amount || accountId === "" || amount === "") {
+            res.status(200).json("Missing parameters");
+        }
+
+        if (amount <= 1000) {
+            let account = await Account.findOne({ where: { id: accountId } });
+
+            if (account.balance >= amount) {
+                account.balance = account.balance - amount;
+                await account.save();
+
+                res.status(201).json("Withdrawal made");
+            }
+        } else {
+            // res.status(200).json("Only $1.000 Patacones per withdrawal");
+            throw new Error("Only $1.000 Patacones per withdrawal");
+        }
+    } catch (error) {
+        res.status(200).json(error.message);
+    }
+});
+
+// make a transaction to an account
+app.post("/accounts/transfer", async function (req, res) {
+    let { fromAccountId, toAccountId, amount } = req.body;
+
+    let myAccount = await Account.findOne({ where: { number: fromAccountId } });
+    let toAccount = await Account.findOne({ where: { number: toAccountId } });
+
+    try {
+        if (
+            !fromAccountId ||
+            !toAccountId ||
+            !amount ||
+            fromAccountId === "" ||
+            toAccountId === "" ||
+            amount === ""
+        ) {
+            res.status(200).json("Missing parameters");
+        }
+
+        if (myAccount.balance >= amount) {
+            myAccount.balance = myAccount.balance - amount;
+            await myAccount.save();
+
+            toAccount.balance = toAccount.balance + amount;
+            await toAccount.save();
+
+            await Transaction.create({
+                fromAccount: fromAccountId,
+                toAccount: toAccountId,
+                amount: amount,
+                description: "Transfer",
+            });
+
+            res.status(201).json("Transferencia realizada");
+        } else {
+            throw new Error("Fondos Insuficientes");
+        }
+    } catch (error) {
+        res.status(200).json(error.message);
+    }
+});
+
 const validateClient = (req) => {
     let client = req.body;
     let valid = false;
